@@ -1,0 +1,13 @@
+[package]
+name = "tochigi"
+version = "0.1.0"
+authors = ["Yushi OMOTE <yushiomote@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+actix = "0.8"
+actix-web = "1.0"
+actix-web-actors = "1.0"
+log = "0.4"
+env_logger = "0.6"
+structopt = "0.2"
