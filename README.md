@@ -1,0 +1,3 @@
+# tochigi
+
+Chintama Terrain Server
