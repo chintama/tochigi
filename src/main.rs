@@ -1,23 +1,76 @@
 use actix::{Actor, StreamHandler};
 use actix_web::{web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
+use gunma::{components::*, protocol::*};
 use log::*;
 use structopt::StructOpt;
 
+type Context = ws::WebsocketContext<Geometry>;
+
 struct Geometry;
 
+struct Sender<'a> {
+    ctx: &'a mut Context,
+}
+
+impl<'a> Sender<'a> {
+    fn new(ctx: &'a mut Context) -> Self {
+        Self { ctx }
+    }
+
+    fn send(&mut self, msg: Message) {
+        info!("Sending {:?}", msg);
+
+        match serde_json::to_vec(&msg) {
+            Ok(bin) => {
+                let _ = self.ctx.binary(bin);
+            }
+            Err(e) => error!("Coudln't send message: {}: {:?}", e, msg),
+        }
+    }
+}
+
 impl Actor for Geometry {
-    type Context = ws::WebsocketContext<Self>;
+    type Context = Context;
 }
 
 impl StreamHandler<ws::Message, ws::ProtocolError> for Geometry {
     fn handle(&mut self, msg: ws::Message, ctx: &mut Self::Context) {
         match msg {
             ws::Message::Ping(msg) => ctx.pong(&msg),
-            ws::Message::Text(text) => ctx.text(text),
-            ws::Message::Binary(bin) => ctx.binary(bin),
-            _ => (),
+            ws::Message::Binary(bin) => {
+                let msg = match serde_json::from_slice(&bin) {
+                    Ok(msg) => msg,
+                    Err(e) => return warn!("Couldn't parse message: {}", e),
+                };
+
+                let sender = Sender::new(ctx);
+                handler(sender, msg);
+            }
+            msg => warn!("Invalid message: {:?}", msg),
         }
+    }
+}
+
+fn handler(mut sender: Sender, msg: Message) {
+    match msg {
+        Message::GetAllTerrain => {
+            info!("Got terrain request");
+
+            for i in 0..100 {
+                let x = i as f32;
+
+                sender.send(Message::Terrain(Terrain {
+                    id: 0,
+                    asset: Asset(0),
+                    pos: Pos::new(x * 1000.0, 0.0),
+                    size: Size::new(1000.0, 100.0),
+                }));
+            }
+
+            sender.send(Message::EndTerrain);
+        }
+        msg => warn!("Received unsupported request: {:?}", msg),
     }
 }
 
