@@ -55,6 +55,8 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for Geometry {
 fn handler(mut sender: Sender, msg: Message) {
     match msg {
         Message::GetAllTerrain => {
+            use rand::prelude::*;
+
             info!("Got terrain request");
 
             for i in 0..100 {
@@ -62,9 +64,24 @@ fn handler(mut sender: Sender, msg: Message) {
 
                 sender.send(Message::Terrain(Terrain {
                     id: 0,
-                    asset: Asset(0),
+                    asset: Asset(200),
                     pos: Pos::new(x * 1000.0, 0.0),
                     size: Size::new(1000.0, 100.0),
+                }));
+            }
+
+            for _ in 0..100 {
+                let mut rng = rand::thread_rng();
+                let px: f32 = rng.gen_range(-1000.0, 5000.0);
+                let py: f32 = rng.gen_range(0.0, 5000.0);
+                let sx: f32 = rng.gen_range(100.0, 300.0);
+                let sy: f32 = rng.gen_range(100.0, 300.0);
+
+                sender.send(Message::Terrain(Terrain {
+                    id: 0,
+                    asset: Asset(200),
+                    pos: Pos::new(px, py),
+                    size: Size::new(sx, sy),
                 }));
             }
 
