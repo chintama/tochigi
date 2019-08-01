@@ -73,9 +73,9 @@ fn handler(mut sender: Sender, msg: Message) {
             for _ in 0..100 {
                 let mut rng = rand::thread_rng();
                 let px: f32 = rng.gen_range(-1000.0, 5000.0);
-                let py: f32 = rng.gen_range(0.0, 5000.0);
-                let sx: f32 = rng.gen_range(100.0, 300.0);
-                let sy: f32 = rng.gen_range(100.0, 300.0);
+                let py: f32 = rng.gen_range(-2000.0, 100.0);
+                let sx: f32 = rng.gen_range(50.0, 100.0);
+                let sy: f32 = rng.gen_range(50.0, 100.0);
 
                 sender.send(Message::Terrain(Terrain {
                     id: 0,
